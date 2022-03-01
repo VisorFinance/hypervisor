@@ -31,12 +31,14 @@ interface HypervisorInterface extends ethers.utils.Interface {
     "balanceOf(address)": FunctionFragment;
     "baseLower()": FunctionFragment;
     "baseUpper()": FunctionFragment;
+    "compound()": FunctionFragment;
     "currentTick()": FunctionFragment;
     "decimals()": FunctionFragment;
     "decreaseAllowance(address,uint256)": FunctionFragment;
     "deposit(uint256,uint256,address,address)": FunctionFragment;
     "deposit0Max()": FunctionFragment;
     "deposit1Max()": FunctionFragment;
+    "directDeposit()": FunctionFragment;
     "fee()": FunctionFragment;
     "getBasePosition()": FunctionFragment;
     "getLimitPosition()": FunctionFragment;
@@ -49,7 +51,6 @@ interface HypervisorInterface extends ethers.utils.Interface {
     "name()": FunctionFragment;
     "nonces(address)": FunctionFragment;
     "owner()": FunctionFragment;
-    "pendingFees()": FunctionFragment;
     "permit(address,address,uint256,uint256,uint8,bytes32,bytes32)": FunctionFragment;
     "pool()": FunctionFragment;
     "pullLiquidity(uint256)": FunctionFragment;
@@ -59,6 +60,7 @@ interface HypervisorInterface extends ethers.utils.Interface {
     "setMaxTotalSupply(uint256)": FunctionFragment;
     "symbol()": FunctionFragment;
     "tickSpacing()": FunctionFragment;
+    "toggleDirectDeposit()": FunctionFragment;
     "toggleWhitelist()": FunctionFragment;
     "token0()": FunctionFragment;
     "token1()": FunctionFragment;
@@ -100,6 +102,7 @@ interface HypervisorInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "baseLower", values?: undefined): string;
   encodeFunctionData(functionFragment: "baseUpper", values?: undefined): string;
+  encodeFunctionData(functionFragment: "compound", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "currentTick",
     values?: undefined
@@ -119,6 +122,10 @@ interface HypervisorInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "deposit1Max",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "directDeposit",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "fee", values?: undefined): string;
@@ -154,10 +161,6 @@ interface HypervisorInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(functionFragment: "nonces", values: [string]): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "pendingFees",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "permit",
     values: [
@@ -201,6 +204,10 @@ interface HypervisorInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "tickSpacing",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "toggleDirectDeposit",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -261,6 +268,7 @@ interface HypervisorInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseLower", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseUpper", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "compound", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "currentTick",
     data: BytesLike
@@ -277,6 +285,10 @@ interface HypervisorInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "deposit1Max",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "directDeposit",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "fee", data: BytesLike): Result;
@@ -306,10 +318,6 @@ interface HypervisorInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "nonces", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "pendingFees",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "permit", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "pool", data: BytesLike): Result;
   decodeFunctionResult(
@@ -332,6 +340,10 @@ interface HypervisorInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "tickSpacing",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "toggleDirectDeposit",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -370,6 +382,8 @@ interface HypervisorInterface extends ethers.utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "Deposit(address,address,uint256,uint256,uint256)": EventFragment;
+    "DepositMaxSet(uint256,uint256)": EventFragment;
+    "MaxTotalSupplySet(uint256)": EventFragment;
     "Rebalance(int24,uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
     "Withdraw(address,address,uint256,uint256,uint256)": EventFragment;
@@ -377,6 +391,8 @@ interface HypervisorInterface extends ethers.utils.Interface {
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Deposit"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DepositMaxSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "MaxTotalSupplySet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Rebalance"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Withdraw"): EventFragment;
@@ -398,6 +414,14 @@ export type DepositEvent = TypedEvent<
     amount0: BigNumber;
     amount1: BigNumber;
   }
+>;
+
+export type DepositMaxSetEvent = TypedEvent<
+  [BigNumber, BigNumber] & { _deposit0Max: BigNumber; _deposit1Max: BigNumber }
+>;
+
+export type MaxTotalSupplySetEvent = TypedEvent<
+  [BigNumber] & { _maxTotalSupply: BigNumber }
 >;
 
 export type RebalanceEvent = TypedEvent<
@@ -508,6 +532,10 @@ export class Hypervisor extends BaseContract {
 
     baseUpper(overrides?: CallOverrides): Promise<[number]>;
 
+    compound(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     currentTick(
       overrides?: CallOverrides
     ): Promise<[number] & { tick: number }>;
@@ -531,6 +559,8 @@ export class Hypervisor extends BaseContract {
     deposit0Max(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     deposit1Max(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    directDeposit(overrides?: CallOverrides): Promise<[boolean]>;
 
     fee(overrides?: CallOverrides): Promise<[number]>;
 
@@ -580,10 +610,6 @@ export class Hypervisor extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
-    pendingFees(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     permit(
       owner: string,
       spender: string,
@@ -631,6 +657,10 @@ export class Hypervisor extends BaseContract {
     symbol(overrides?: CallOverrides): Promise<[string]>;
 
     tickSpacing(overrides?: CallOverrides): Promise<[number]>;
+
+    toggleDirectDeposit(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     toggleWhitelist(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -723,6 +753,10 @@ export class Hypervisor extends BaseContract {
 
   baseUpper(overrides?: CallOverrides): Promise<number>;
 
+  compound(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   currentTick(overrides?: CallOverrides): Promise<number>;
 
   decimals(overrides?: CallOverrides): Promise<number>;
@@ -744,6 +778,8 @@ export class Hypervisor extends BaseContract {
   deposit0Max(overrides?: CallOverrides): Promise<BigNumber>;
 
   deposit1Max(overrides?: CallOverrides): Promise<BigNumber>;
+
+  directDeposit(overrides?: CallOverrides): Promise<boolean>;
 
   fee(overrides?: CallOverrides): Promise<number>;
 
@@ -790,10 +826,6 @@ export class Hypervisor extends BaseContract {
   nonces(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   owner(overrides?: CallOverrides): Promise<string>;
-
-  pendingFees(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   permit(
     owner: string,
@@ -842,6 +874,10 @@ export class Hypervisor extends BaseContract {
   symbol(overrides?: CallOverrides): Promise<string>;
 
   tickSpacing(overrides?: CallOverrides): Promise<number>;
+
+  toggleDirectDeposit(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   toggleWhitelist(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -931,6 +967,17 @@ export class Hypervisor extends BaseContract {
 
     baseUpper(overrides?: CallOverrides): Promise<number>;
 
+    compound(
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, BigNumber] & {
+        baseToken0Owed: BigNumber;
+        baseToken1Owed: BigNumber;
+        limitToken0Owed: BigNumber;
+        limitToken1Owed: BigNumber;
+      }
+    >;
+
     currentTick(overrides?: CallOverrides): Promise<number>;
 
     decimals(overrides?: CallOverrides): Promise<number>;
@@ -952,6 +999,8 @@ export class Hypervisor extends BaseContract {
     deposit0Max(overrides?: CallOverrides): Promise<BigNumber>;
 
     deposit1Max(overrides?: CallOverrides): Promise<BigNumber>;
+
+    directDeposit(overrides?: CallOverrides): Promise<boolean>;
 
     fee(overrides?: CallOverrides): Promise<number>;
 
@@ -1000,10 +1049,6 @@ export class Hypervisor extends BaseContract {
     nonces(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<string>;
-
-    pendingFees(
-      overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber] & { fees0: BigNumber; fees1: BigNumber }>;
 
     permit(
       owner: string,
@@ -1056,6 +1101,8 @@ export class Hypervisor extends BaseContract {
     symbol(overrides?: CallOverrides): Promise<string>;
 
     tickSpacing(overrides?: CallOverrides): Promise<number>;
+
+    toggleDirectDeposit(overrides?: CallOverrides): Promise<void>;
 
     toggleWhitelist(overrides?: CallOverrides): Promise<void>;
 
@@ -1161,6 +1208,30 @@ export class Hypervisor extends BaseContract {
         amount1: BigNumber;
       }
     >;
+
+    "DepositMaxSet(uint256,uint256)"(
+      _deposit0Max?: null,
+      _deposit1Max?: null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber],
+      { _deposit0Max: BigNumber; _deposit1Max: BigNumber }
+    >;
+
+    DepositMaxSet(
+      _deposit0Max?: null,
+      _deposit1Max?: null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber],
+      { _deposit0Max: BigNumber; _deposit1Max: BigNumber }
+    >;
+
+    "MaxTotalSupplySet(uint256)"(
+      _maxTotalSupply?: null
+    ): TypedEventFilter<[BigNumber], { _maxTotalSupply: BigNumber }>;
+
+    MaxTotalSupplySet(
+      _maxTotalSupply?: null
+    ): TypedEventFilter<[BigNumber], { _maxTotalSupply: BigNumber }>;
 
     "Rebalance(int24,uint256,uint256,uint256,uint256,uint256)"(
       tick?: null,
@@ -1293,6 +1364,10 @@ export class Hypervisor extends BaseContract {
 
     baseUpper(overrides?: CallOverrides): Promise<BigNumber>;
 
+    compound(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     currentTick(overrides?: CallOverrides): Promise<BigNumber>;
 
     decimals(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1314,6 +1389,8 @@ export class Hypervisor extends BaseContract {
     deposit0Max(overrides?: CallOverrides): Promise<BigNumber>;
 
     deposit1Max(overrides?: CallOverrides): Promise<BigNumber>;
+
+    directDeposit(overrides?: CallOverrides): Promise<BigNumber>;
 
     fee(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1342,10 +1419,6 @@ export class Hypervisor extends BaseContract {
     nonces(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
-
-    pendingFees(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
 
     permit(
       owner: string,
@@ -1394,6 +1467,10 @@ export class Hypervisor extends BaseContract {
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
 
     tickSpacing(overrides?: CallOverrides): Promise<BigNumber>;
+
+    toggleDirectDeposit(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     toggleWhitelist(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1490,6 +1567,10 @@ export class Hypervisor extends BaseContract {
 
     baseUpper(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    compound(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     currentTick(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     decimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1511,6 +1592,8 @@ export class Hypervisor extends BaseContract {
     deposit0Max(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     deposit1Max(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    directDeposit(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     fee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1545,10 +1628,6 @@ export class Hypervisor extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    pendingFees(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
 
     permit(
       owner: string,
@@ -1597,6 +1676,10 @@ export class Hypervisor extends BaseContract {
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     tickSpacing(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    toggleDirectDeposit(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     toggleWhitelist(
       overrides?: Overrides & { from?: string | Promise<string> }

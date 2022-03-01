@@ -17,12 +17,11 @@ import {
 } from './shared/utilities'
 
 import {
-    SwapRouter,
-    UniswapV3Factory,
+    ISwapRouter,
+    IUniswapV3Factory,
     IUniswapV3Pool,
     HypervisorFactory,
     Hypervisor,
-    NonfungiblePositionManager,
     TestERC20
 } from "../typechain"
 
@@ -32,9 +31,8 @@ describe('Hypervisor', () => {
     const [wallet, alice, bob, carol, other,
            user0, user1, user2, user3, user4] = waffle.provider.getWallets()
 
-    let factory: UniswapV3Factory
-    let router: SwapRouter
-    let nft: NonfungiblePositionManager
+    let factory: IUniswapV3Factory
+    let router: ISwapRouter
     let token0: TestERC20
     let token1: TestERC20
     let token2: TestERC20
@@ -48,7 +46,7 @@ describe('Hypervisor', () => {
     })
 
     beforeEach('deploy contracts', async () => {
-        ({ token0, token1, token2, factory, router, nft, hypervisorFactory } = await loadFixture(hypervisorTestFixture))
+        ({ token0, token1, token2, factory, router, hypervisorFactory } = await loadFixture(hypervisorTestFixture))
         await hypervisorFactory.createHypervisor(token0.address, token1.address, FeeAmount.MEDIUM,"Test Visor", "TVR");
         const hypervisorAddress = await hypervisorFactory.getHypervisor(token0.address, token1.address, FeeAmount.MEDIUM)
         hypervisor = (await ethers.getContractAt('Hypervisor', hypervisorAddress)) as Hypervisor
@@ -62,65 +60,48 @@ describe('Hypervisor', () => {
         // someone to swap with
         await token0.mint(carol.address, ethers.utils.parseEther('1000000000000'))
         await token1.mint(carol.address, ethers.utils.parseEther('1000000000000'))
-
-        await token0.connect(carol).approve(nft.address, ethers.utils.parseEther('10000000000'))
-        await token1.connect(carol).approve(nft.address, ethers.utils.parseEther('10000000000'))
-
-        await nft.connect(carol).mint({
-            token0: token0.address,
-            token1: token1.address,
-            tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-            tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-            fee: FeeAmount.MEDIUM,
-            recipient: carol.address,
-            amount0Desired: ethers.utils.parseEther('10000000000'),
-            amount1Desired: ethers.utils.parseEther('10000000000'),
-            amount0Min: 0,
-            amount1Min: 0,
-            deadline: 2000000000,
-        })
     })
 
   /*
    * Tests arent accommodating deposit functions with differing signatures. 
    * UniProxy straddles deposit(uint,uint,address) and deposit(uint,uint,address,address)
    */
-  //it('deposit with an incorrect proportion will revert', async () => {
-  //      let uniProxyFactory = await ethers.getContractFactory('UniProxy')
-  //      let uniProxy = (await uniProxyFactory.deploy())
-  //      let owner = await uniProxy.owner();
-  //      expect(owner).to.equal(wallet.address);
-  //      await uniProxy.connect(wallet).addPosition(hypervisor.address, 2);
+    it('deposit with an incorrect proportion will revert', async () => {
+        let uniProxyFactory = await ethers.getContractFactory('UniProxy')
+        let uniProxy = (await uniProxyFactory.deploy())
+        let owner = await uniProxy.owner();
+        expect(owner).to.equal(wallet.address);
+        await uniProxy.connect(wallet).addPosition(hypervisor.address, 3);
 
-  //      // SETTING FREE DEPOSIT
-  //      //await uniProxy.connect(wallet).toggleDepositFree();
-  //      let depState = await uniProxy.freeDeposit();
-  //      expect(depState).to.equal(false);
+        // SETTING FREE DEPOSIT
+        //await uniProxy.connect(wallet).toggleDepositFree();
+        let depState = await uniProxy.freeDeposit();
+        expect(depState).to.equal(false);
 
-  //      await token0.mint(alice.address, ethers.utils.parseEther('1000000'))
-  //      await token1.mint(alice.address, ethers.utils.parseEther('1000000'))
+        await token0.mint(alice.address, ethers.utils.parseEther('1000000'))
+        await token1.mint(alice.address, ethers.utils.parseEther('1000000'))
 
-  //      await token0.connect(alice).approve(hypervisor.address, ethers.utils.parseEther('1000000'))
-  //      await token1.connect(alice).approve(hypervisor.address, ethers.utils.parseEther('1000000'))
-  //      await token0.connect(alice).approve(uniProxy.address, ethers.utils.parseEther('1000000'))
-  //      await token1.connect(alice).approve(uniProxy.address, ethers.utils.parseEther('1000000'))
+        await token0.connect(alice).approve(hypervisor.address, ethers.utils.parseEther('1000000'))
+        await token1.connect(alice).approve(hypervisor.address, ethers.utils.parseEther('1000000'))
+        await token0.connect(alice).approve(uniProxy.address, ethers.utils.parseEther('1000000'))
+        await token1.connect(alice).approve(uniProxy.address, ethers.utils.parseEther('1000000'))
 
-  //      // alice should start with 0 hypervisor tokens
-  //      let alice_liq_balance = await hypervisor.balanceOf(alice.address)
-  //      expect(alice_liq_balance).to.equal(0)
-  //      // establishing 1:1 ratio in hypervisor
-  //      await uniProxy.connect(alice).deposit(ethers.utils.parseEther('1000'), ethers.utils.parseEther('1000'), alice.address, alice.address, hypervisor.address)
-  //      await hypervisor.rebalance(-1800, 1800, 0, 600, bob.address, 0)
-  //      // attempting 2 unbalanced deposits & expecting failure
-  //      await expect(uniProxy.connect(alice).deposit(ethers.utils.parseEther('20000'), 0, alice.address, alice.address, hypervisor.address)).to.be.revertedWith("Improper ratio")
-  //      await expect(uniProxy.connect(alice).deposit(0, ethers.utils.parseEther('20000'), alice.address, alice.address, hypervisor.address)).to.be.revertedWith("Improper ratio")
-  //      // attempting balanced deposit & expecting success
-  //      await uniProxy.connect(alice).deposit(ethers.utils.parseEther('1000'), ethers.utils.parseEther('1000'), alice.address, alice.address, hypervisor.address)
-  //      // nearly balanced deposits are excepted
-  //      await uniProxy.connect(alice).deposit(ethers.utils.parseEther('1000'), ethers.utils.parseEther('998'), alice.address, alice.address, hypervisor.address)
-  //  });
+        // alice should start with 0 hypervisor tokens
+        let alice_liq_balance = await hypervisor.balanceOf(alice.address)
+        expect(alice_liq_balance).to.equal(0)
+        // establishing 1:1 ratio in hypervisor
+        await uniProxy.connect(alice).deposit(ethers.utils.parseEther('1000'), ethers.utils.parseEther('1000'), alice.address, hypervisor.address)
+        await hypervisor.rebalance(-1800, 1800, 0, 600, bob.address, 0)
+        // attempting 2 unbalanced deposits & expecting failure
+        await expect(uniProxy.connect(alice).deposit(ethers.utils.parseEther('20000'), 0, alice.address, hypervisor.address)).to.be.revertedWith("Improper ratio")
+        await expect(uniProxy.connect(alice).deposit(0, ethers.utils.parseEther('20000'), alice.address, hypervisor.address)).to.be.revertedWith("Improper ratio")
+        // attempting balanced deposit & expecting success
+        await uniProxy.connect(alice).deposit(ethers.utils.parseEther('1000'), ethers.utils.parseEther('1000'), alice.address, hypervisor.address)
+        // nearly balanced deposits are excepted
+        await uniProxy.connect(alice).deposit(ethers.utils.parseEther('1000'), ethers.utils.parseEther('998'), alice.address, hypervisor.address)
+    });
 
-    it('calculates fees properly & rebalances to limit-only after large swap', async () => {
+    it('calculates fees properly & rebalances to limit-only after large swap, realize pending fees after compound', async () => {
         await token0.mint(alice.address, ethers.utils.parseEther('1000000'))
         await token1.mint(alice.address, ethers.utils.parseEther('1000000'))
 
@@ -138,7 +119,7 @@ describe('Hypervisor', () => {
         expect(token0hypervisor).to.equal(ethers.utils.parseEther('1000'))
         expect(token1hypervisor).to.equal(ethers.utils.parseEther('1000'))
         alice_liq_balance = await hypervisor.balanceOf(alice.address)
-        console.log("alice liq balance: " + alice_liq_balance)
+        console.log("alice liq balance: " + ethers.utils.formatEther(alice_liq_balance))
         // check that alice has been awarded liquidity tokens equal the
         // quantity of tokens deposited since their price is the same
         expect(alice_liq_balance).to.equal(ethers.utils.parseEther('2000'))
@@ -154,10 +135,17 @@ describe('Hypervisor', () => {
         let limitPosition = await hypervisor.getLimitPosition()
         expect(basePosition[0]).to.be.gt(0)
         expect(limitPosition[0]).to.be.equal(0)
+        console.log("basePosition[0]: " + ethers.utils.formatEther(basePosition[0]));
+        console.log("basePosition[1]: " + ethers.utils.formatEther(basePosition[1]));
+        console.log("basePosition[2]: " + ethers.utils.formatEther(basePosition[2]));
+        console.log("limitPosition[0]: " + ethers.utils.formatEther(limitPosition[0]));
+        console.log("limitPosition[2]: " + ethers.utils.formatEther(limitPosition[1]));
+        console.log("limitPosition[2]: " + ethers.utils.formatEther(limitPosition[2]));
 
         let tokenAmounts = await hypervisor.getTotalAmounts()
         expect(tokenAmounts[0] === tokenAmounts[1])
-        console.log("totalAmounts: " + tokenAmounts)
+        console.log("totalAmounts[0]: " + ethers.utils.formatEther(tokenAmounts[0]))
+        console.log("totalAmounts[1]: " + ethers.utils.formatEther(tokenAmounts[1]))
 
         // do a test swap
         await token0.connect(carol).approve(router.address, ethers.utils.parseEther('10000000000'))
@@ -176,10 +164,12 @@ describe('Hypervisor', () => {
         let limitUpper = 0
         let limitLower = -180
         tokenAmounts = await hypervisor.getTotalAmounts()
+        console.log("tokenAmounts0: " + ethers.utils.formatEther(tokenAmounts[0]));
+        console.log("tokenAmounts1: " + ethers.utils.formatEther(tokenAmounts[1]));
         expect(tokenAmounts[0] > tokenAmounts[1])
         let currentTick = await hypervisor.currentTick()
         // this is beyond the bounds of the original base position
-        expect(currentTick).to.equal(-199)
+        expect(currentTick).to.equal(-887272)
 
         let fees0 = await token0.balanceOf(bob.address)
         let fees1 = await token1.balanceOf(bob.address)
@@ -195,17 +185,17 @@ describe('Hypervisor', () => {
         // we are expecting VISR fees of 3 bips
         expect(fees0).to.gt(ethers.utils.parseEther('0.3'))
         expect(fees0).to.lt(ethers.utils.parseEther('0.305'))
-        console.log("fees: " + fees0.toString())
+        console.log("fees: " + ethers.utils.formatEther(fees0))
         expect(fees1).to.equal(0)
         // have the positions been updated? Are the token amounts unchanged?
         basePosition = await hypervisor.getBasePosition()
         limitPosition = await hypervisor.getLimitPosition()
-        // the base position should have 0 liquidity because we are left with
+        // the limit position should have 0 liquidity because we are left with
         // only a single asset after carol's big swap
-        expect(basePosition[0]).to.equal(0)
-        expect(limitPosition[0]).to.be.gt(0)
-        console.log("limit liq:" + limitPosition[0])
-        console.log("base liq:" + basePosition[0])
+        console.log("limit liq:" + ethers.utils.formatEther(limitPosition[0]))
+        console.log("base liq:" + ethers.utils.formatEther(basePosition[0]))
+        expect(basePosition[0]).to.be.gt(0)
+        expect(limitPosition[0]).to.equal(0)
 
         // swap everything back and check fees in the other token have
         // been earned
@@ -220,8 +210,15 @@ describe('Hypervisor', () => {
             sqrtPriceLimitX96: 0,
         })
         currentTick = await hypervisor.currentTick()
+				let totalAmounts0 = await hypervisor.getTotalAmounts();
+				await hypervisor.compound();
+				let totalAmounts1 = await hypervisor.getTotalAmounts();
+				// pending fees from swap should be realized after compounding
+				expect(totalAmounts0.total1).to.lt(totalAmounts1.total1);	 	
+
+
         // this is beyond the bounds of the original base position
-        expect(currentTick).to.equal(200)
+        expect(currentTick).to.equal(887271)
         limitUpper = 180
         limitLower = 0
         await hypervisor.rebalance(-1800, 1800, limitLower, limitUpper, bob.address, 0)
@@ -233,16 +230,16 @@ describe('Hypervisor', () => {
         // we are expecting fees of approximately 3 bips (10% of 30bips, which is total fees)
         expect(fees1).to.gt(ethers.utils.parseEther('0.595'))
         expect(fees1).to.lt(ethers.utils.parseEther('0.605'))
-        console.log("fees: " + fees0.toString())
+        console.log("fees: " + ethers.utils.formatEther(fees0))
         // have the positions been updated? Are the token amounts unchanged?
         basePosition = await hypervisor.getBasePosition()
         limitPosition = await hypervisor.getLimitPosition()
-        // the base position should have 0 liquidity because we are left with
+        // the limit position should have 0 liquidity because we are left with
         // only a single asset after carol's big swap
-        expect(basePosition[0]).to.equal(0)
-        expect(limitPosition[0]).to.be.gt(0)
-        console.log("limit liq:" + limitPosition[0])
-        console.log("base liq:" + basePosition[0])
+        console.log("limit liq:" + ethers.utils.formatEther(limitPosition[0]))
+        console.log("base liq:" + ethers.utils.formatEther(basePosition[0]))
+        expect(basePosition[0]).to.be.gt(0)
+        expect(limitPosition[0]).to.equal(0)
     })
 
     it('deposit/withdrawal with many users', async () => {
@@ -306,16 +303,16 @@ describe('Hypervisor', () => {
         let user4token0Amount = await token0.balanceOf(user4.address)
         let user4token1Amount = await token1.balanceOf(user4.address)
 
-        expect(user0token0Amount.toString()).to.be.equal("0")
-        expect(user1token0Amount.toString()).to.be.equal("0")
-        expect(user2token0Amount.toString()).to.be.equal("0")
-        expect(user3token0Amount.toString()).to.be.equal("0")
-        expect(user4token0Amount.toString()).to.be.equal("0")
-        expect(user0token1Amount.toString()).to.be.equal("0")
-        expect(user1token1Amount.toString()).to.be.equal("0")
-        expect(user2token1Amount.toString()).to.be.equal("0")
-        expect(user3token1Amount.toString()).to.be.equal("0")
-        expect(user4token1Amount.toString()).to.be.equal("0")
+        expect(user0token0Amount).to.equal(0)
+        expect(user1token0Amount).to.equal(0)
+        expect(user2token0Amount).to.equal(0)
+        expect(user3token0Amount).to.equal(0)
+        expect(user4token0Amount).to.equal(0)
+        expect(user0token1Amount).to.equal(0)
+        expect(user1token1Amount).to.equal(0)
+        expect(user2token1Amount).to.equal(0)
+        expect(user3token1Amount).to.equal(0)
+        expect(user4token1Amount).to.equal(0)
 
         // withdraw
         const user0_liq_balance = await hypervisor.balanceOf(user0.address)
@@ -345,14 +342,14 @@ describe('Hypervisor', () => {
         user4token0Amount = await token0.balanceOf(user4.address)
         user4token1Amount = await token1.balanceOf(user4.address)
 
-        expect(user0token0Amount.sub(tokenAmount).abs().toNumber()).to.be.lte(1)
-        expect(user1token0Amount.sub(tokenAmount).abs().toNumber()).to.be.lte(1)
-        expect(user2token0Amount.sub(tokenAmount).abs().toNumber()).to.be.lte(1)
-        expect(user3token0Amount.sub(tokenAmount).abs().toNumber()).to.be.lte(1)
-        expect(user0token1Amount.sub(tokenAmount).abs().toNumber()).to.be.lte(1)
-        expect(user1token1Amount.sub(tokenAmount).abs().toNumber()).to.be.lte(1)
-        expect(user2token1Amount.sub(tokenAmount).abs().toNumber()).to.be.lte(1)
-        expect(user3token1Amount.sub(tokenAmount).abs().toNumber()).to.be.lte(1)
+        expect(user0token0Amount.sub(tokenAmount).abs()).to.be.lte(ethers.utils.parseEther('1'))
+        expect(user1token0Amount.sub(tokenAmount).abs()).to.be.lte(ethers.utils.parseEther('1'))
+        expect(user2token0Amount.sub(tokenAmount).abs()).to.be.lte(ethers.utils.parseEther('1'))
+        expect(user3token0Amount.sub(tokenAmount).abs()).to.be.lte(ethers.utils.parseEther('1'))
+        expect(user0token1Amount.sub(tokenAmount).abs()).to.be.lte(ethers.utils.parseEther('1'))
+        expect(user1token1Amount.sub(tokenAmount).abs()).to.be.lte(ethers.utils.parseEther('1'))
+        expect(user2token1Amount.sub(tokenAmount).abs()).to.be.lte(ethers.utils.parseEther('1'))
+        expect(user3token1Amount.sub(tokenAmount).abs()).to.be.lte(ethers.utils.parseEther('1'))
     })
 
     it('can withdraw deposited funds without rebalance', async () => {

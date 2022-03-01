@@ -7,6 +7,8 @@ import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 
 import {Hypervisor} from './Hypervisor.sol';
 
+/// @title HypervisorFactory
+
 contract HypervisorFactory is Ownable {
     IUniswapV3Factory public uniswapV3Factory;
     mapping(address => mapping(address => mapping(uint24 => address))) public getHypervisor; // toke0, token1, fee -> hypervisor address
@@ -15,20 +17,29 @@ contract HypervisorFactory is Ownable {
     event HypervisorCreated(address token0, address token1, uint24 fee, address hypervisor, uint256);
 
     constructor(address _uniswapV3Factory) {
+        require(_uniswapV3Factory != address(0), "uniswapV3Factory should be non-zero");
         uniswapV3Factory = IUniswapV3Factory(_uniswapV3Factory);
     }
 
+    /// @notice Get the number of hypervisors created
+    /// @return Number of hypervisors created
     function allHypervisorsLength() external view returns (uint256) {
         return allHypervisors.length;
     }
 
+    /// @notice Create a Hypervisor
+    /// @param tokenA Address of token0
+    /// @param tokenB Address of toekn1
+    /// @param fee The desired fee for the hypervisor
+    /// @param name Name of the hyervisor
+    /// @param symbol Symbole of the hypervisor
+    /// @return hypervisor Address of hypervisor created
     function createHypervisor(
         address tokenA,
         address tokenB,
         uint24 fee,
         string memory name,
         string memory symbol
-
     ) external onlyOwner returns (address hypervisor) {
         require(tokenA != tokenB, 'SF: IDENTICAL_ADDRESSES'); // TODO: using PoolAddress library (uniswap-v3-periphery)
         (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);

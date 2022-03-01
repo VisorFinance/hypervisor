@@ -29,6 +29,7 @@ interface AdminInterface extends ethers.utils.Interface {
     "pendingFees(address)": FunctionFragment;
     "pullLiquidity(address,uint256)": FunctionFragment;
     "rebalance(address,int24,int24,int24,int24,address,int256)": FunctionFragment;
+    "removeListed(address,address)": FunctionFragment;
     "rescueERC20(address,address)": FunctionFragment;
     "setDepositMax(address,uint256,uint256)": FunctionFragment;
     "setMaxTotalSupply(address,uint256)": FunctionFragment;
@@ -68,6 +69,10 @@ interface AdminInterface extends ethers.utils.Interface {
       string,
       BigNumberish
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "removeListed",
+    values: [string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "rescueERC20",
@@ -118,6 +123,10 @@ interface AdminInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "rebalance", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "removeListed",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "rescueERC20",
     data: BytesLike
@@ -240,6 +249,12 @@ export class Admin extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    removeListed(
+      _hypervisor: string,
+      listed: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     rescueERC20(
       token: string,
       recipient: string,
@@ -324,6 +339,12 @@ export class Admin extends BaseContract {
     _limitUpper: BigNumberish,
     _feeRecipient: string,
     swapQuantity: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  removeListed(
+    _hypervisor: string,
+    listed: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -421,6 +442,12 @@ export class Admin extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    removeListed(
+      _hypervisor: string,
+      listed: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     rescueERC20(
       token: string,
       recipient: string,
@@ -505,6 +532,12 @@ export class Admin extends BaseContract {
       _limitUpper: BigNumberish,
       _feeRecipient: string,
       swapQuantity: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    removeListed(
+      _hypervisor: string,
+      listed: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -593,6 +626,12 @@ export class Admin extends BaseContract {
       _limitUpper: BigNumberish,
       _feeRecipient: string,
       swapQuantity: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    removeListed(
+      _hypervisor: string,
+      listed: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

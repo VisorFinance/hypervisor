@@ -15,7 +15,6 @@ contract GammaController is BaseController {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
-
     IUniProxy public immutable uniProxy;
     uint256 public constant N_COINS = 2;
     
@@ -38,11 +37,11 @@ contract GammaController is BaseController {
       uint256 amount0,
       uint256 amount1,
       address lpTokenAddress,
-			uint256 minMintAmount
+	  uint256 minMintAmount
     ) external onlyManager {
 
-        uint256 balance0 = IHypervisor(lpTokenAddress).token0().balanceOf(address(this));
-        uint256 balance1 = IHypervisor(lpTokenAddress).token1().balanceOf(address(this));
+        uint256 balance0 = IHypervisor(lpTokenAddress).token0().balanceOf(manager);
+        uint256 balance1 = IHypervisor(lpTokenAddress).token1().balanceOf(manager);
 
         require(balance0 >= amount0 && balance1 >= amount1, "INSUFFICIENT_BALANCE");
 
@@ -52,7 +51,7 @@ contract GammaController is BaseController {
 
         uint256 lpTokenBalanceBefore = IERC20(lpTokenAddress).balanceOf(manager);
         // deposit amount0, amount1 and mint LP tokens to the manager 
-        uint256 lpTokenReceived = uniProxy.deposit(amount0, amount1, manager, address(this), lpTokenAddress);
+        uint256 lpTokenReceived = uniProxy.deposit(amount0, amount1, manager, lpTokenAddress);
 
         uint256 lpTokenBalanceAfter = IERC20(lpTokenAddress).balanceOf(manager);
         require(lpTokenBalanceBefore + lpTokenReceived == lpTokenBalanceAfter, "LP_TOKEN_MISMATCH");
@@ -70,12 +69,12 @@ contract GammaController is BaseController {
         uint256[N_COINS] memory minAmounts
     ) external onlyManager {
         
-        uint256 lpTokenBalanceBefore = IERC20(lpTokenAddress).balanceOf(address(this));
+        uint256 lpTokenBalanceBefore = IERC20(lpTokenAddress).balanceOf(manager);
         uint256[N_COINS] memory coinsBalancesBefore = _getCoinsBalances(lpTokenAddress);
 
-        IHypervisor(lpTokenAddress).withdraw(amount, address(this), address(this));
+        IHypervisor(lpTokenAddress).withdraw(amount, manager, manager);
 
-        uint256 lpTokenBalanceAfter = IERC20(lpTokenAddress).balanceOf(address(this));
+        uint256 lpTokenBalanceAfter = IERC20(lpTokenAddress).balanceOf(manager);
         uint256[N_COINS] memory coinsBalancesAfter = _getCoinsBalances(lpTokenAddress);
 
         _compareCoinsBalances(coinsBalancesBefore, coinsBalancesAfter, minAmounts);
@@ -89,8 +88,8 @@ contract GammaController is BaseController {
     }
 
     function _getCoinsBalances(address lpTokenAddress) internal returns (uint256[N_COINS] memory coinsBalances) {
-        coinsBalances[0] = IHypervisor(lpTokenAddress).token0().balanceOf(address(this));
-        coinsBalances[1] = IHypervisor(lpTokenAddress).token1().balanceOf(address(this));
+        coinsBalances[0] = IHypervisor(lpTokenAddress).token0().balanceOf(manager);
+        coinsBalances[1] = IHypervisor(lpTokenAddress).token1().balanceOf(manager);
         return coinsBalances;
     }
 
@@ -114,3 +113,4 @@ contract GammaController is BaseController {
         token.safeIncreaseAllowance(spender, amount);
     }
 }
+

@@ -101,6 +101,34 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "compound",
+    outputs: [
+      {
+        internalType: "uint128",
+        name: "baseToken0Owed",
+        type: "uint128",
+      },
+      {
+        internalType: "uint128",
+        name: "baseToken1Owed",
+        type: "uint128",
+      },
+      {
+        internalType: "uint128",
+        name: "limitToken0Owed",
+        type: "uint128",
+      },
+      {
+        internalType: "uint128",
+        name: "limitToken1Owed",
+        type: "uint128",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "currentTick",
     outputs: [
       {
@@ -173,6 +201,32 @@ const _abi = [
       },
     ],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "deposit0Max",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "deposit1Max",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -292,6 +346,19 @@ const _abi = [
       },
     ],
     name: "rebalance",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "listed",
+        type: "address",
+      },
+    ],
+    name: "removeListed",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

@@ -3,9 +3,8 @@ import { ethers } from 'hardhat'
 
 import {
     TestERC20,
-    UniswapV3Factory,
-    SwapRouter,
-    NonfungiblePositionManager,
+    IUniswapV3Factory,
+    ISwapRouter,
     HypervisorFactory,
     MockUniswapV3PoolDeployer
 } from "../../typechain";
@@ -13,24 +12,20 @@ import {
 import { Fixture } from 'ethereum-waffle'
 
 interface UniswapV3Fixture {
-    factory: UniswapV3Factory
-    router: SwapRouter
-    nft: NonfungiblePositionManager
+    factory: IUniswapV3Factory
+    router: ISwapRouter
 }
 
 async function uniswapV3Fixture(): Promise<UniswapV3Fixture> {
     const factoryFactory = await ethers.getContractFactory('UniswapV3Factory')
-    const factory = (await factoryFactory.deploy()) as UniswapV3Factory
+    const factory = (await factoryFactory.deploy()) as IUniswapV3Factory
 
     const tokenFactory = await ethers.getContractFactory('TestERC20')
     const WETH = (await tokenFactory.deploy(BigNumber.from(2).pow(255))) as TestERC20 // TODO: change to real WETH
 
     const routerFactory = await ethers.getContractFactory('SwapRouter')
-    const router = (await routerFactory.deploy(factory.address, WETH.address)) as SwapRouter
-
-    const nftFactory = await ethers.getContractFactory('NonfungiblePositionManager')
-    const nft = (await nftFactory.deploy(factory.address, WETH.address, ethers.constants.AddressZero)) as NonfungiblePositionManager // TODO: third parameter is wrong
-    return { factory, router, nft }
+    const router = (await routerFactory.deploy(factory.address, WETH.address)) as ISwapRouter
+    return { factory, router }
 }
 
 
@@ -57,7 +52,7 @@ interface HypervisorFactoryFixture {
     hypervisorFactory: HypervisorFactory
 }
 
-async function hypervisorFactoryFixture(factory: UniswapV3Factory): Promise<HypervisorFactoryFixture> {
+async function hypervisorFactoryFixture(factory: IUniswapV3Factory): Promise<HypervisorFactoryFixture> {
     const hypervisorFactoryFactory = await ethers.getContractFactory('HypervisorFactory')
     const hypervisorFactory = (await hypervisorFactoryFactory.deploy(factory.address)) as HypervisorFactory
     return { hypervisorFactory }
@@ -76,7 +71,7 @@ async function ourFactoryFixture(): Promise<OurFactoryFixture> {
 type allContractsFixture = UniswapV3Fixture & TokensFixture & OurFactoryFixture
 
 export const fixture: Fixture<allContractsFixture> = async function (): Promise<allContractsFixture> {
-    const { factory, router, nft } = await uniswapV3Fixture()
+    const { factory, router } = await uniswapV3Fixture()
     const { token0, token1, token2 } = await tokensFixture()
     const { ourFactory } = await ourFactoryFixture()
 
@@ -86,7 +81,6 @@ export const fixture: Fixture<allContractsFixture> = async function (): Promise<
         token2,
         factory,
         router,
-        nft,
         ourFactory,
     }
 }
@@ -94,7 +88,7 @@ export const fixture: Fixture<allContractsFixture> = async function (): Promise<
 type HypervisorTestFixture = UniswapV3Fixture & TokensFixture & HypervisorFactoryFixture
 
 export const hypervisorTestFixture: Fixture<HypervisorTestFixture> = async function (): Promise<HypervisorTestFixture> {
-    const { factory, router, nft } = await uniswapV3Fixture()
+    const { factory, router } = await uniswapV3Fixture()
     const { token0, token1, token2 } = await tokensFixture()
     const { hypervisorFactory } = await hypervisorFactoryFixture(factory)
 
@@ -104,7 +98,6 @@ export const hypervisorTestFixture: Fixture<HypervisorTestFixture> = async funct
         token2,
         factory,
         router,
-        nft,
         hypervisorFactory,
     }
 }
