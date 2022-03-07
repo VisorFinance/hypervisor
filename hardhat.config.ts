@@ -19,6 +19,10 @@ const config: HardhatUserConfig = {
         url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
         accounts: [process.env.MAINNET_PRIVATE_KEY as string],
       },
+      polygon: {
+        url: `https://polygon-mainnet.g.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
+        accounts: [process.env.MAINNET_PRIVATE_KEY as string],
+      },
   },
   watcher: {
       compilation: {
@@ -49,7 +53,10 @@ const config: HardhatUserConfig = {
 
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_APIKEY,
+    apiKey: {
+      mainnet: process.env.ETHERSCAN_APIKEY,
+      polygon: process.env.POLYGONSCAN_APIKEY
+    }
   },
   mocha: {
     timeout: 2000000

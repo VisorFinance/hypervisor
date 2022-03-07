@@ -22,7 +22,8 @@ interface IVault {
         int24 _limitLower,
         int24 _limitUpper,
         address feeRecipient,
-        int256 swapQuantity
+        int256 swapQuantity,
+        int256 amountMin
     ) external;
 
     function getTotalAmounts() external view returns (uint256, uint256);

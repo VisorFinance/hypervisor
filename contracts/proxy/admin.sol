@@ -38,6 +38,7 @@ contract Admin {
     /// @param swapQuantity Quantity of tokens to swap; if quantity is positive,
     /// `swapQuantity` token0 are swaped for token1, if negative, `swapQuantity`
     /// token1 is swaped for token0    
+    /// @param amountMin Minimum Amount of tokens should be received in swap
     function rebalance(
         address _hypervisor,
         int24 _baseLower,
@@ -45,9 +46,10 @@ contract Admin {
         int24 _limitLower,
         int24 _limitUpper,
         address _feeRecipient,
-        int256 swapQuantity
+        int256 swapQuantity,
+        int256 amountMin
     ) external onlyAdvisor {
-        IHypervisor(_hypervisor).rebalance(_baseLower, _baseUpper, _limitLower, _limitUpper, _feeRecipient, swapQuantity);
+        IHypervisor(_hypervisor).rebalance(_baseLower, _baseUpper, _limitLower, _limitUpper, _feeRecipient, swapQuantity, amountMin);
     }
 
     /// @notice Pull liquidity tokens from liquidity and receive the tokens

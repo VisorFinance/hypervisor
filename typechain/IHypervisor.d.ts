@@ -35,7 +35,7 @@ interface IHypervisorInterface extends ethers.utils.Interface {
     "pendingFees()": FunctionFragment;
     "pool()": FunctionFragment;
     "pullLiquidity(uint256)": FunctionFragment;
-    "rebalance(int24,int24,int24,int24,address,int256)": FunctionFragment;
+    "rebalance(int24,int24,int24,int24,address,int256,int256)": FunctionFragment;
     "removeListed(address)": FunctionFragment;
     "setDepositMax(uint256,uint256)": FunctionFragment;
     "setMaxTotalSupply(uint256)": FunctionFragment;
@@ -104,6 +104,7 @@ interface IHypervisorInterface extends ethers.utils.Interface {
       BigNumberish,
       BigNumberish,
       string,
+      BigNumberish,
       BigNumberish
     ]
   ): string;
@@ -341,6 +342,7 @@ export class IHypervisor extends BaseContract {
       _limitUpper: BigNumberish,
       _feeRecipient: string,
       swapQuantity: BigNumberish,
+      amountMin: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -468,6 +470,7 @@ export class IHypervisor extends BaseContract {
     _limitUpper: BigNumberish,
     _feeRecipient: string,
     swapQuantity: BigNumberish,
+    amountMin: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -608,6 +611,7 @@ export class IHypervisor extends BaseContract {
       _limitUpper: BigNumberish,
       _feeRecipient: string,
       swapQuantity: BigNumberish,
+      amountMin: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -731,6 +735,7 @@ export class IHypervisor extends BaseContract {
       _limitUpper: BigNumberish,
       _feeRecipient: string,
       swapQuantity: BigNumberish,
+      amountMin: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -860,6 +865,7 @@ export class IHypervisor extends BaseContract {
       _limitUpper: BigNumberish,
       _feeRecipient: string,
       swapQuantity: BigNumberish,
+      amountMin: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

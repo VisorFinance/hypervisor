@@ -208,6 +208,11 @@ const _abi = [
         name: "swapQuantity",
         type: "int256",
       },
+      {
+        internalType: "int256",
+        name: "amountMin",
+        type: "int256",
+      },
     ],
     name: "rebalance",
     outputs: [],
