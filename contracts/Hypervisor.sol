@@ -50,6 +50,9 @@ contract Hypervisor is IVault, IUniswapV3MintCallback, IUniswapV3SwapCallback, E
 
     uint256 public constant PRECISION = 1e36;
 
+    bool rebalanceCalled;
+    bool mintCalled;
+
     /// events
     event MaxTotalSupplySet(uint256 _maxTotalSupply);
     event DepositMaxSet(uint256 _deposit0Max, uint256 _deposit1Max);
@@ -247,13 +250,16 @@ contract Hypervisor is IVault, IUniswapV3MintCallback, IUniswapV3SwapCallback, E
     /// @param swapQuantity Quantity of tokens to swap; if quantity is positive,
     /// `swapQuantity` token0 are swaped for token1, if negative, `swapQuantity`
     /// token1 is swaped for token0
+    /// @param amountMin Minimum Amount of tokens should be received in swap
     function rebalance(
         int24 _baseLower,
         int24 _baseUpper,
         int24 _limitLower,
         int24 _limitUpper,
         address feeRecipient,
-        int256 swapQuantity
+        int256 swapQuantity,
+        int256 amountMin,
+        uint160 sqrtPriceLimitX96
     ) nonReentrant external override onlyOwner {
         require(
             _baseLower < _baseUpper &&
@@ -301,12 +307,13 @@ contract Hypervisor is IVault, IUniswapV3MintCallback, IUniswapV3SwapCallback, E
 
         /// swap tokens if required
         if (swapQuantity != 0) {
+            rebalanceCalled = true;
             pool.swap(
                 address(this),
                 swapQuantity > 0,
                 swapQuantity > 0 ? swapQuantity : -swapQuantity,
-                swapQuantity > 0 ? TickMath.MIN_SQRT_RATIO + 1 : TickMath.MAX_SQRT_RATIO - 1,
-                abi.encode(address(this))
+                sqrtPriceLimitX96,
+                abi.encode(amountMin)
             );
         }
 
@@ -408,6 +415,7 @@ contract Hypervisor is IVault, IUniswapV3MintCallback, IUniswapV3SwapCallback, E
         address payer
     ) internal returns (uint256 amount0, uint256 amount1) {
         if (liquidity > 0) {
+            mintCalled = true;
             (amount0, amount1) = pool.mint(
                 address(this),
                 tickLower,
@@ -486,15 +494,11 @@ contract Hypervisor is IVault, IUniswapV3MintCallback, IUniswapV3SwapCallback, E
         bytes calldata data
     ) external override {
         require(msg.sender == address(pool));
-        address payer = abi.decode(data, (address));
+        require(mintCalled == true);
 
-        if (payer == address(this)) {
-            if (amount0 > 0) token0.safeTransfer(msg.sender, amount0);
-            if (amount1 > 0) token1.safeTransfer(msg.sender, amount1);
-        } else {
-            if (amount0 > 0) token0.safeTransferFrom(payer, msg.sender, amount0);
-            if (amount1 > 0) token1.safeTransferFrom(payer, msg.sender, amount1);
-        }
+        if (amount0 > 0) token0.safeTransfer(msg.sender, amount0);
+        if (amount1 > 0) token1.safeTransfer(msg.sender, amount1);
+        mintCalled = false;
     }
 
     /// @notice Callback function of uniswapV3Pool swap
@@ -504,21 +508,17 @@ contract Hypervisor is IVault, IUniswapV3MintCallback, IUniswapV3SwapCallback, E
         bytes calldata data
     ) external override {
         require(msg.sender == address(pool));
-        address payer = abi.decode(data, (address));
+        require(rebalanceCalled == true);
+        int256 amountMin = abi.decode(data, (int256));
 
         if (amount0Delta > 0) {
-            if (payer == address(this)) {
-                token0.safeTransfer(msg.sender, uint256(amount0Delta));
-            } else {
-                token0.safeTransferFrom(payer, msg.sender, uint256(amount0Delta));
-            }
+            require(amount0Delta >= amountMin);
+            token0.safeTransfer(msg.sender, uint256(amount0Delta));
         } else if (amount1Delta > 0) {
-            if (payer == address(this)) {
-                token1.safeTransfer(msg.sender, uint256(amount1Delta));
-            } else {
-                token1.safeTransferFrom(payer, msg.sender, uint256(amount1Delta));
-            }
+            require(amount1Delta >= amountMin);
+            token1.safeTransfer(msg.sender, uint256(amount1Delta));
         }
+        rebalanceCalled = false;
     }
 
     /// @return total0 Quantity of token0 in both positions and unused in the Hypervisor

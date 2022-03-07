@@ -33,7 +33,9 @@ interface IHypervisor {
         int24 _limitLower,
         int24 _limitUpper,
         address _feeRecipient,
-        int256 swapQuantity
+        int256 swapQuantity,
+        int256 amountMin,
+        uint160 sqrtPriceLimitX96
     ) external;
 
     function addBaseLiquidity(

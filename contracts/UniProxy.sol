@@ -77,8 +77,8 @@ contract UniProxy is ReentrancyGuard {
     require(p.version == 0, 'already added');
     require(version > 0, 'version < 1');
     p.version = version;
-    IHypervisor(pos).token0().approve(pos, MAX_INT);
-    IHypervisor(pos).token1().approve(pos, MAX_INT);
+    IHypervisor(pos).token0().safeApprove(pos, MAX_INT);
+    IHypervisor(pos).token1().safeApprove(pos, MAX_INT);
     emit PositionAdded(pos, version);
   }
 
@@ -96,6 +96,16 @@ contract UniProxy is ReentrancyGuard {
   ) nonReentrant external onlyAddedPosition(pos) returns (uint256 shares) {
     require(to != address(0), "to should be non-zero");
     Position storage p = positions[pos];
+
+    if (p.version < 3) {
+      /// requires asset transfer to proxy
+      if (deposit0 != 0) {
+        IHypervisor(pos).token0().safeTransferFrom(msg.sender, address(this), deposit0);
+      }
+      if (deposit1 != 0) {
+        IHypervisor(pos).token1().safeTransferFrom(msg.sender, address(this), deposit1);
+      }
+    }
 
     if (twapCheck || p.twapOverride) {
       /// check twap
@@ -130,13 +140,6 @@ contract UniProxy is ReentrancyGuard {
     }
 
     if (p.version < 3) {
-      /// requires asset transfer to proxy
-      if (deposit0 != 0) {
-        IHypervisor(pos).token0().transferFrom(msg.sender, address(this), deposit0);
-      }
-      if (deposit1 != 0) {
-        IHypervisor(pos).token1().transferFrom(msg.sender, address(this), deposit1);
-      }
       if (p.version < 2) {
         /// requires lp token transfer from proxy to msg.sender
         shares = IHypervisor(pos).deposit(deposit0, deposit1, address(this));
