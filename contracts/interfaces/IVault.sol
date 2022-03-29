@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Unlicense
+// SPDX-License-Identifier: GPL-3.0-only
 
 pragma solidity 0.7.6;
 
@@ -13,7 +13,9 @@ interface IVault {
     function withdraw(
         uint256,
         address,
-        address
+        address,
+        uint256,
+        uint256
     ) external returns (uint256, uint256);
 
     function rebalance(
@@ -22,7 +24,8 @@ interface IVault {
         int24 _limitLower,
         int24 _limitUpper,
         address feeRecipient,
-        int256 swapQuantity
+        uint256 _amount0Min,
+        uint256 _amount1Min
     ) external;
 
     function getTotalAmounts() external view returns (uint256, uint256);

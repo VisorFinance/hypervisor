@@ -29,7 +29,7 @@ contract UniProxy is ReentrancyGuard {
   uint256 public deltaScale = 1000; /// must be a power of 10
   uint256 public priceThreshold = 100;
 
-  uint256 constant MAX_INT = 2**256 - 1;
+  uint256 constant MAX_UINT = 2**256 - 1;
 
   struct Position {
     uint8 version; // 1->3 proxy 3 transfers, 2-> proxy two transfers, 3-> proxy no transfers
@@ -52,6 +52,7 @@ contract UniProxy is ReentrancyGuard {
   event DeltaScaleSet(uint256 _deltaScale);
   event TwapIntervalSet(uint32 _twapInterval);
   event TwapOverrideSet(address pos, bool twapOverride, uint32 _twapInterval);
+  event PriceThresholdPosSet(address pos, uint256 _priceThreshold);
   event DepositFreeToggled();
   event DepositOverrideToggled(address pos);
   event DepositFreeOverrideToggled(address pos);
@@ -77,8 +78,8 @@ contract UniProxy is ReentrancyGuard {
     require(p.version == 0, 'already added');
     require(version > 0, 'version < 1');
     p.version = version;
-    IHypervisor(pos).token0().approve(pos, MAX_INT);
-    IHypervisor(pos).token1().approve(pos, MAX_INT);
+    IHypervisor(pos).token0().safeApprove(pos, MAX_UINT);
+    IHypervisor(pos).token1().safeApprove(pos, MAX_UINT);
     emit PositionAdded(pos, version);
   }
 
@@ -92,21 +93,23 @@ contract UniProxy is ReentrancyGuard {
     uint256 deposit0,
     uint256 deposit1,
     address to,
-    address pos
+    address pos,
+    uint256[4] memory minIn
   ) nonReentrant external onlyAddedPosition(pos) returns (uint256 shares) {
     require(to != address(0), "to should be non-zero");
     Position storage p = positions[pos];
 
-    if (twapCheck || p.twapOverride) {
-      /// check twap
-      checkPriceChange(
-        pos,
-        (p.twapOverride ? p.twapInterval : twapInterval),
-        (p.twapOverride ? p.priceThreshold : priceThreshold)
-      );
+    if (p.version < 3) {
+      /// requires asset transfer to proxy
+      if (deposit0 != 0) {
+        IHypervisor(pos).token0().safeTransferFrom(msg.sender, address(this), deposit0);
+      }
+      if (deposit1 != 0) {
+        IHypervisor(pos).token1().safeTransferFrom(msg.sender, address(this), deposit1);
+      }
     }
 
-    if (!freeDeposit && !p.list[msg.sender] && !p.freeDeposit) {      
+    if (!freeDeposit && !p.list[msg.sender] && !p.freeDeposit) { 
       // freeDeposit off and hypervisor msg.sender not on list
       if (deposit0 > 0) {
         (uint256 test1Min, uint256 test1Max) = getDepositAmount(pos, address(IHypervisor(pos).token0()), deposit0);
@@ -120,6 +123,15 @@ contract UniProxy is ReentrancyGuard {
       }
     }
 
+    if (twapCheck || p.twapOverride) {
+      /// check twap
+      checkPriceChange(
+        pos,
+        (p.twapOverride ? p.twapInterval : twapInterval),
+        (p.twapOverride ? p.priceThreshold : priceThreshold)
+      );
+    }
+
     if (p.depositOverride) {
       if (p.deposit0Max > 0) {
         require(deposit0 <= p.deposit0Max, "token0 exceeds");
@@ -129,33 +141,8 @@ contract UniProxy is ReentrancyGuard {
       }
     }
 
-    if (p.version < 3) {
-      /// requires asset transfer to proxy
-      if (deposit0 != 0) {
-        IHypervisor(pos).token0().transferFrom(msg.sender, address(this), deposit0);
-      }
-      if (deposit1 != 0) {
-        IHypervisor(pos).token1().transferFrom(msg.sender, address(this), deposit1);
-      }
-      if (p.version < 2) {
-        /// requires lp token transfer from proxy to msg.sender
-        shares = IHypervisor(pos).deposit(deposit0, deposit1, address(this));
-        IHypervisor(pos).transfer(to, shares);
-      }
-      else{
-        /// transfer lp tokens direct to msg.sender
-        shares = IHypervisor(pos).deposit(deposit0, deposit1, msg.sender);
-      }
-    }
-    else {
-      /// transfer lp tokens direct to msg.sender
-      shares = IHypervisor(pos).deposit(deposit0, deposit1, msg.sender, msg.sender);
-    }
-
-    if (p.depositOverride) {
-      require(IHypervisor(pos).totalSupply() <= p.maxTotalSupply, "supply exceeds");
-    }
-
+    /// transfer lp tokens direct to msg.sender and provide minIn
+    shares = IHypervisor(pos).deposit(deposit0, deposit1, msg.sender, msg.sender, minIn);
   }
 
   /// @notice Get the amount of token to deposit for the given amount of pair token
@@ -307,6 +294,14 @@ contract UniProxy is ReentrancyGuard {
     p.twapOverride = twapOverride;
     p.twapInterval = _twapInterval;
     emit TwapOverrideSet(pos, twapOverride, _twapInterval);
+  }
+
+  /// @param pos Hypervisor Address
+  /// @param _priceThreshold Price Threshold
+  function setPriceThresholdPos(address pos, uint256 _priceThreshold) external onlyOwner onlyAddedPosition(pos) {
+    Position storage p = positions[pos];
+    p.priceThreshold = _priceThreshold;
+    emit PriceThresholdPosSet(pos, _priceThreshold);
   }
 
   /// @notice Twap Toggle

@@ -23,10 +23,9 @@ interface HypervisorInterface extends ethers.utils.Interface {
   functions: {
     "DOMAIN_SEPARATOR()": FunctionFragment;
     "PRECISION()": FunctionFragment;
-    "addBaseLiquidity(uint256,uint256)": FunctionFragment;
-    "addLimitLiquidity(uint256,uint256)": FunctionFragment;
+    "addBaseLiquidity(uint256,uint256,uint256[2])": FunctionFragment;
+    "addLimitLiquidity(uint256,uint256,uint256[2])": FunctionFragment;
     "allowance(address,address)": FunctionFragment;
-    "appendList(address[])": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseLower()": FunctionFragment;
@@ -35,7 +34,7 @@ interface HypervisorInterface extends ethers.utils.Interface {
     "currentTick()": FunctionFragment;
     "decimals()": FunctionFragment;
     "decreaseAllowance(address,uint256)": FunctionFragment;
-    "deposit(uint256,uint256,address,address)": FunctionFragment;
+    "deposit(uint256,uint256,address,address,uint256[4])": FunctionFragment;
     "deposit0Max()": FunctionFragment;
     "deposit1Max()": FunctionFragment;
     "directDeposit()": FunctionFragment;
@@ -46,22 +45,19 @@ interface HypervisorInterface extends ethers.utils.Interface {
     "increaseAllowance(address,uint256)": FunctionFragment;
     "limitLower()": FunctionFragment;
     "limitUpper()": FunctionFragment;
-    "list(address)": FunctionFragment;
     "maxTotalSupply()": FunctionFragment;
     "name()": FunctionFragment;
     "nonces(address)": FunctionFragment;
     "owner()": FunctionFragment;
     "permit(address,address,uint256,uint256,uint8,bytes32,bytes32)": FunctionFragment;
     "pool()": FunctionFragment;
-    "pullLiquidity(uint256)": FunctionFragment;
-    "rebalance(int24,int24,int24,int24,address,int256)": FunctionFragment;
-    "removeListed(address)": FunctionFragment;
-    "setDepositMax(uint256,uint256)": FunctionFragment;
-    "setMaxTotalSupply(uint256)": FunctionFragment;
+    "pullLiquidity(uint256,uint256[4])": FunctionFragment;
+    "rebalance(int24,int24,int24,int24,address,uint256[4],uint256[4])": FunctionFragment;
+    "removeWhitelisted()": FunctionFragment;
+    "setWhitelist(address)": FunctionFragment;
     "symbol()": FunctionFragment;
     "tickSpacing()": FunctionFragment;
     "toggleDirectDeposit()": FunctionFragment;
-    "toggleWhitelist()": FunctionFragment;
     "token0()": FunctionFragment;
     "token1()": FunctionFragment;
     "totalSupply()": FunctionFragment;
@@ -69,9 +65,8 @@ interface HypervisorInterface extends ethers.utils.Interface {
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "uniswapV3MintCallback(uint256,uint256,bytes)": FunctionFragment;
-    "uniswapV3SwapCallback(int256,int256,bytes)": FunctionFragment;
-    "whitelisted()": FunctionFragment;
-    "withdraw(uint256,address,address)": FunctionFragment;
+    "whitelistedAddress()": FunctionFragment;
+    "withdraw(uint256,address,address,uint256[4])": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -81,19 +76,15 @@ interface HypervisorInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "PRECISION", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "addBaseLiquidity",
-    values: [BigNumberish, BigNumberish]
+    values: [BigNumberish, BigNumberish, [BigNumberish, BigNumberish]]
   ): string;
   encodeFunctionData(
     functionFragment: "addLimitLiquidity",
-    values: [BigNumberish, BigNumberish]
+    values: [BigNumberish, BigNumberish, [BigNumberish, BigNumberish]]
   ): string;
   encodeFunctionData(
     functionFragment: "allowance",
     values: [string, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "appendList",
-    values: [string[]]
   ): string;
   encodeFunctionData(
     functionFragment: "approve",
@@ -114,7 +105,13 @@ interface HypervisorInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "deposit",
-    values: [BigNumberish, BigNumberish, string, string]
+    values: [
+      BigNumberish,
+      BigNumberish,
+      string,
+      string,
+      [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "deposit0Max",
@@ -153,7 +150,6 @@ interface HypervisorInterface extends ethers.utils.Interface {
     functionFragment: "limitUpper",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "list", values: [string]): string;
   encodeFunctionData(
     functionFragment: "maxTotalSupply",
     values?: undefined
@@ -176,7 +172,10 @@ interface HypervisorInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "pool", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "pullLiquidity",
-    values: [BigNumberish]
+    values: [
+      BigNumberish,
+      [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "rebalance",
@@ -186,20 +185,17 @@ interface HypervisorInterface extends ethers.utils.Interface {
       BigNumberish,
       BigNumberish,
       string,
-      BigNumberish
+      [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+      [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "removeListed",
+    functionFragment: "removeWhitelisted",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setWhitelist",
     values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setDepositMax",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setMaxTotalSupply",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
@@ -208,10 +204,6 @@ interface HypervisorInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "toggleDirectDeposit",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "toggleWhitelist",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "token0", values?: undefined): string;
@@ -237,16 +229,17 @@ interface HypervisorInterface extends ethers.utils.Interface {
     values: [BigNumberish, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "uniswapV3SwapCallback",
-    values: [BigNumberish, BigNumberish, BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "whitelisted",
+    functionFragment: "whitelistedAddress",
     values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "withdraw",
-    values: [BigNumberish, string, string]
+    values: [
+      BigNumberish,
+      string,
+      string,
+      [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+    ]
   ): string;
 
   decodeFunctionResult(
@@ -263,7 +256,6 @@ interface HypervisorInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "appendList", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseLower", data: BytesLike): Result;
@@ -310,7 +302,6 @@ interface HypervisorInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "limitLower", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "limitUpper", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "list", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "maxTotalSupply",
     data: BytesLike
@@ -326,15 +317,11 @@ interface HypervisorInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "rebalance", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "removeListed",
+    functionFragment: "removeWhitelisted",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setDepositMax",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setMaxTotalSupply",
+    functionFragment: "setWhitelist",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
@@ -344,10 +331,6 @@ interface HypervisorInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "toggleDirectDeposit",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "toggleWhitelist",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "token0", data: BytesLike): Result;
@@ -370,11 +353,7 @@ interface HypervisorInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "uniswapV3SwapCallback",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "whitelisted",
+    functionFragment: "whitelistedAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
@@ -382,8 +361,6 @@ interface HypervisorInterface extends ethers.utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "Deposit(address,address,uint256,uint256,uint256)": EventFragment;
-    "DepositMaxSet(uint256,uint256)": EventFragment;
-    "MaxTotalSupplySet(uint256)": EventFragment;
     "Rebalance(int24,uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
     "Withdraw(address,address,uint256,uint256,uint256)": EventFragment;
@@ -391,8 +368,6 @@ interface HypervisorInterface extends ethers.utils.Interface {
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Deposit"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "DepositMaxSet"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "MaxTotalSupplySet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Rebalance"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Withdraw"): EventFragment;
@@ -414,14 +389,6 @@ export type DepositEvent = TypedEvent<
     amount0: BigNumber;
     amount1: BigNumber;
   }
->;
-
-export type DepositMaxSetEvent = TypedEvent<
-  [BigNumber, BigNumber] & { _deposit0Max: BigNumber; _deposit1Max: BigNumber }
->;
-
-export type MaxTotalSupplySetEvent = TypedEvent<
-  [BigNumber] & { _maxTotalSupply: BigNumber }
 >;
 
 export type RebalanceEvent = TypedEvent<
@@ -500,12 +467,14 @@ export class Hypervisor extends BaseContract {
     addBaseLiquidity(
       amount0: BigNumberish,
       amount1: BigNumberish,
+      inMin: [BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     addLimitLiquidity(
       amount0: BigNumberish,
       amount1: BigNumberish,
+      inMin: [BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -514,11 +483,6 @@ export class Hypervisor extends BaseContract {
       spender: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
-
-    appendList(
-      listed: string[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
 
     approve(
       spender: string,
@@ -553,6 +517,7 @@ export class Hypervisor extends BaseContract {
       deposit1: BigNumberish,
       to: string,
       from: string,
+      inMin: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -600,8 +565,6 @@ export class Hypervisor extends BaseContract {
 
     limitUpper(overrides?: CallOverrides): Promise<[number]>;
 
-    list(arg0: string, overrides?: CallOverrides): Promise<[boolean]>;
-
     maxTotalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     name(overrides?: CallOverrides): Promise<[string]>;
@@ -625,6 +588,7 @@ export class Hypervisor extends BaseContract {
 
     pullLiquidity(
       shares: BigNumberish,
+      minAmounts: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -634,23 +598,17 @@ export class Hypervisor extends BaseContract {
       _limitLower: BigNumberish,
       _limitUpper: BigNumberish,
       feeRecipient: string,
-      swapQuantity: BigNumberish,
+      inMin: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+      outMin: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    removeListed(
-      listed: string,
+    removeWhitelisted(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setDepositMax(
-      _deposit0Max: BigNumberish,
-      _deposit1Max: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setMaxTotalSupply(
-      _maxTotalSupply: BigNumberish,
+    setWhitelist(
+      _address: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -659,10 +617,6 @@ export class Hypervisor extends BaseContract {
     tickSpacing(overrides?: CallOverrides): Promise<[number]>;
 
     toggleDirectDeposit(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    toggleWhitelist(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -697,19 +651,13 @@ export class Hypervisor extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    uniswapV3SwapCallback(
-      amount0Delta: BigNumberish,
-      amount1Delta: BigNumberish,
-      data: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    whitelisted(overrides?: CallOverrides): Promise<[boolean]>;
+    whitelistedAddress(overrides?: CallOverrides): Promise<[string]>;
 
     withdraw(
       shares: BigNumberish,
       to: string,
       from: string,
+      minAmounts: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
@@ -721,12 +669,14 @@ export class Hypervisor extends BaseContract {
   addBaseLiquidity(
     amount0: BigNumberish,
     amount1: BigNumberish,
+    inMin: [BigNumberish, BigNumberish],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   addLimitLiquidity(
     amount0: BigNumberish,
     amount1: BigNumberish,
+    inMin: [BigNumberish, BigNumberish],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -735,11 +685,6 @@ export class Hypervisor extends BaseContract {
     spender: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
-
-  appendList(
-    listed: string[],
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   approve(
     spender: string,
@@ -772,6 +717,7 @@ export class Hypervisor extends BaseContract {
     deposit1: BigNumberish,
     to: string,
     from: string,
+    inMin: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -817,8 +763,6 @@ export class Hypervisor extends BaseContract {
 
   limitUpper(overrides?: CallOverrides): Promise<number>;
 
-  list(arg0: string, overrides?: CallOverrides): Promise<boolean>;
-
   maxTotalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   name(overrides?: CallOverrides): Promise<string>;
@@ -842,6 +786,7 @@ export class Hypervisor extends BaseContract {
 
   pullLiquidity(
     shares: BigNumberish,
+    minAmounts: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -851,23 +796,17 @@ export class Hypervisor extends BaseContract {
     _limitLower: BigNumberish,
     _limitUpper: BigNumberish,
     feeRecipient: string,
-    swapQuantity: BigNumberish,
+    inMin: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+    outMin: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  removeListed(
-    listed: string,
+  removeWhitelisted(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setDepositMax(
-    _deposit0Max: BigNumberish,
-    _deposit1Max: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setMaxTotalSupply(
-    _maxTotalSupply: BigNumberish,
+  setWhitelist(
+    _address: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -876,10 +815,6 @@ export class Hypervisor extends BaseContract {
   tickSpacing(overrides?: CallOverrides): Promise<number>;
 
   toggleDirectDeposit(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  toggleWhitelist(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -914,19 +849,13 @@ export class Hypervisor extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  uniswapV3SwapCallback(
-    amount0Delta: BigNumberish,
-    amount1Delta: BigNumberish,
-    data: BytesLike,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  whitelisted(overrides?: CallOverrides): Promise<boolean>;
+  whitelistedAddress(overrides?: CallOverrides): Promise<string>;
 
   withdraw(
     shares: BigNumberish,
     to: string,
     from: string,
+    minAmounts: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -938,12 +867,14 @@ export class Hypervisor extends BaseContract {
     addBaseLiquidity(
       amount0: BigNumberish,
       amount1: BigNumberish,
+      inMin: [BigNumberish, BigNumberish],
       overrides?: CallOverrides
     ): Promise<void>;
 
     addLimitLiquidity(
       amount0: BigNumberish,
       amount1: BigNumberish,
+      inMin: [BigNumberish, BigNumberish],
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -952,8 +883,6 @@ export class Hypervisor extends BaseContract {
       spender: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    appendList(listed: string[], overrides?: CallOverrides): Promise<void>;
 
     approve(
       spender: string,
@@ -970,11 +899,18 @@ export class Hypervisor extends BaseContract {
     compound(
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        [BigNumber, BigNumber, BigNumber, BigNumber]
+      ] & {
         baseToken0Owed: BigNumber;
         baseToken1Owed: BigNumber;
         limitToken0Owed: BigNumber;
         limitToken1Owed: BigNumber;
+        inMin: [BigNumber, BigNumber, BigNumber, BigNumber];
       }
     >;
 
@@ -993,6 +929,7 @@ export class Hypervisor extends BaseContract {
       deposit1: BigNumberish,
       to: string,
       from: string,
+      inMin: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1040,8 +977,6 @@ export class Hypervisor extends BaseContract {
 
     limitUpper(overrides?: CallOverrides): Promise<number>;
 
-    list(arg0: string, overrides?: CallOverrides): Promise<boolean>;
-
     maxTotalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<string>;
@@ -1065,6 +1000,7 @@ export class Hypervisor extends BaseContract {
 
     pullLiquidity(
       shares: BigNumberish,
+      minAmounts: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber, BigNumber] & {
@@ -1081,30 +1017,20 @@ export class Hypervisor extends BaseContract {
       _limitLower: BigNumberish,
       _limitUpper: BigNumberish,
       feeRecipient: string,
-      swapQuantity: BigNumberish,
+      inMin: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+      outMin: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: CallOverrides
     ): Promise<void>;
 
-    removeListed(listed: string, overrides?: CallOverrides): Promise<void>;
+    removeWhitelisted(overrides?: CallOverrides): Promise<void>;
 
-    setDepositMax(
-      _deposit0Max: BigNumberish,
-      _deposit1Max: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setMaxTotalSupply(
-      _maxTotalSupply: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    setWhitelist(_address: string, overrides?: CallOverrides): Promise<void>;
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
     tickSpacing(overrides?: CallOverrides): Promise<number>;
 
     toggleDirectDeposit(overrides?: CallOverrides): Promise<void>;
-
-    toggleWhitelist(overrides?: CallOverrides): Promise<void>;
 
     token0(overrides?: CallOverrides): Promise<string>;
 
@@ -1137,19 +1063,13 @@ export class Hypervisor extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    uniswapV3SwapCallback(
-      amount0Delta: BigNumberish,
-      amount1Delta: BigNumberish,
-      data: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    whitelisted(overrides?: CallOverrides): Promise<boolean>;
+    whitelistedAddress(overrides?: CallOverrides): Promise<string>;
 
     withdraw(
       shares: BigNumberish,
       to: string,
       from: string,
+      minAmounts: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
@@ -1208,30 +1128,6 @@ export class Hypervisor extends BaseContract {
         amount1: BigNumber;
       }
     >;
-
-    "DepositMaxSet(uint256,uint256)"(
-      _deposit0Max?: null,
-      _deposit1Max?: null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber],
-      { _deposit0Max: BigNumber; _deposit1Max: BigNumber }
-    >;
-
-    DepositMaxSet(
-      _deposit0Max?: null,
-      _deposit1Max?: null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber],
-      { _deposit0Max: BigNumber; _deposit1Max: BigNumber }
-    >;
-
-    "MaxTotalSupplySet(uint256)"(
-      _maxTotalSupply?: null
-    ): TypedEventFilter<[BigNumber], { _maxTotalSupply: BigNumber }>;
-
-    MaxTotalSupplySet(
-      _maxTotalSupply?: null
-    ): TypedEventFilter<[BigNumber], { _maxTotalSupply: BigNumber }>;
 
     "Rebalance(int24,uint256,uint256,uint256,uint256,uint256)"(
       tick?: null,
@@ -1332,12 +1228,14 @@ export class Hypervisor extends BaseContract {
     addBaseLiquidity(
       amount0: BigNumberish,
       amount1: BigNumberish,
+      inMin: [BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     addLimitLiquidity(
       amount0: BigNumberish,
       amount1: BigNumberish,
+      inMin: [BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1345,11 +1243,6 @@ export class Hypervisor extends BaseContract {
       owner: string,
       spender: string,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    appendList(
-      listed: string[],
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     approve(
@@ -1383,6 +1276,7 @@ export class Hypervisor extends BaseContract {
       deposit1: BigNumberish,
       to: string,
       from: string,
+      inMin: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1410,8 +1304,6 @@ export class Hypervisor extends BaseContract {
 
     limitUpper(overrides?: CallOverrides): Promise<BigNumber>;
 
-    list(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
-
     maxTotalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1435,6 +1327,7 @@ export class Hypervisor extends BaseContract {
 
     pullLiquidity(
       shares: BigNumberish,
+      minAmounts: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1444,23 +1337,17 @@ export class Hypervisor extends BaseContract {
       _limitLower: BigNumberish,
       _limitUpper: BigNumberish,
       feeRecipient: string,
-      swapQuantity: BigNumberish,
+      inMin: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+      outMin: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    removeListed(
-      listed: string,
+    removeWhitelisted(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setDepositMax(
-      _deposit0Max: BigNumberish,
-      _deposit1Max: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setMaxTotalSupply(
-      _maxTotalSupply: BigNumberish,
+    setWhitelist(
+      _address: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1469,10 +1356,6 @@ export class Hypervisor extends BaseContract {
     tickSpacing(overrides?: CallOverrides): Promise<BigNumber>;
 
     toggleDirectDeposit(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    toggleWhitelist(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1507,19 +1390,13 @@ export class Hypervisor extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    uniswapV3SwapCallback(
-      amount0Delta: BigNumberish,
-      amount1Delta: BigNumberish,
-      data: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    whitelisted(overrides?: CallOverrides): Promise<BigNumber>;
+    whitelistedAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
     withdraw(
       shares: BigNumberish,
       to: string,
       from: string,
+      minAmounts: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -1532,12 +1409,14 @@ export class Hypervisor extends BaseContract {
     addBaseLiquidity(
       amount0: BigNumberish,
       amount1: BigNumberish,
+      inMin: [BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     addLimitLiquidity(
       amount0: BigNumberish,
       amount1: BigNumberish,
+      inMin: [BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1545,11 +1424,6 @@ export class Hypervisor extends BaseContract {
       owner: string,
       spender: string,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    appendList(
-      listed: string[],
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     approve(
@@ -1586,6 +1460,7 @@ export class Hypervisor extends BaseContract {
       deposit1: BigNumberish,
       to: string,
       from: string,
+      inMin: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1613,11 +1488,6 @@ export class Hypervisor extends BaseContract {
 
     limitUpper(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    list(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     maxTotalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1644,6 +1514,7 @@ export class Hypervisor extends BaseContract {
 
     pullLiquidity(
       shares: BigNumberish,
+      minAmounts: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1653,23 +1524,17 @@ export class Hypervisor extends BaseContract {
       _limitLower: BigNumberish,
       _limitUpper: BigNumberish,
       feeRecipient: string,
-      swapQuantity: BigNumberish,
+      inMin: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+      outMin: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    removeListed(
-      listed: string,
+    removeWhitelisted(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setDepositMax(
-      _deposit0Max: BigNumberish,
-      _deposit1Max: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setMaxTotalSupply(
-      _maxTotalSupply: BigNumberish,
+    setWhitelist(
+      _address: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1678,10 +1543,6 @@ export class Hypervisor extends BaseContract {
     tickSpacing(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     toggleDirectDeposit(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    toggleWhitelist(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1716,19 +1577,15 @@ export class Hypervisor extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    uniswapV3SwapCallback(
-      amount0Delta: BigNumberish,
-      amount1Delta: BigNumberish,
-      data: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    whitelistedAddress(
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    whitelisted(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     withdraw(
       shares: BigNumberish,
       to: string,
       from: string,
+      minAmounts: [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

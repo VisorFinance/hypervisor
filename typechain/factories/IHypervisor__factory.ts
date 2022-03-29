@@ -19,6 +19,11 @@ const _abi = [
         name: "amount1",
         type: "uint256",
       },
+      {
+        internalType: "uint256[2]",
+        name: "minIn",
+        type: "uint256[2]",
+      },
     ],
     name: "addBaseLiquidity",
     outputs: [],
@@ -37,21 +42,13 @@ const _abi = [
         name: "amount1",
         type: "uint256",
       },
-    ],
-    name: "addLimitLiquidity",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
       {
-        internalType: "address[]",
-        name: "listed",
-        type: "address[]",
+        internalType: "uint256[2]",
+        name: "minIn",
+        type: "uint256[2]",
       },
     ],
-    name: "appendList",
+    name: "addLimitLiquidity",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -162,34 +159,10 @@ const _abi = [
         name: "",
         type: "address",
       },
-    ],
-    name: "deposit",
-    outputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
+        internalType: "uint256[4]",
+        name: "minIn",
+        type: "uint256[4]",
       },
     ],
     name: "deposit",
@@ -249,24 +222,6 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "pendingFees",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "fees0",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "fees1",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "pool",
     outputs: [
       {
@@ -284,6 +239,11 @@ const _abi = [
         internalType: "uint256",
         name: "shares",
         type: "uint256",
+      },
+      {
+        internalType: "uint256[4]",
+        name: "minAmounts",
+        type: "uint256[4]",
       },
     ],
     name: "pullLiquidity",
@@ -340,9 +300,14 @@ const _abi = [
         type: "address",
       },
       {
-        internalType: "int256",
-        name: "swapQuantity",
-        type: "int256",
+        internalType: "uint256[4]",
+        name: "minIn",
+        type: "uint256[4]",
+      },
+      {
+        internalType: "uint256[4]",
+        name: "outMin",
+        type: "uint256[4]",
       },
     ],
     name: "rebalance",
@@ -351,52 +316,21 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "removeWhitelisted",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
-        name: "listed",
+        name: "_address",
         type: "address",
       },
     ],
-    name: "removeListed",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_deposit0Max",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_deposit1Max",
-        type: "uint256",
-      },
-    ],
-    name: "setDepositMax",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_maxTotalSupply",
-        type: "uint256",
-      },
-    ],
-    name: "setMaxTotalSupply",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "toggleWhitelist",
+    name: "setWhitelist",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -522,6 +456,11 @@ const _abi = [
         internalType: "address",
         name: "",
         type: "address",
+      },
+      {
+        internalType: "uint256[4]",
+        name: "",
+        type: "uint256[4]",
       },
     ],
     name: "withdraw",

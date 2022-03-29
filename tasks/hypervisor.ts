@@ -182,4 +182,58 @@ task('verify-hypervisor', 'Verify Hypervisor contract')
 
   });
 
+  task('deploy-uniproxy', 'Deploy UniProxy contract')
+  .setAction(async (cliArgs, { ethers, run, network }) => {
 
+    await run('compile')
+
+    // get signer
+
+    const signer = (await ethers.getSigners())[0]
+    console.log('Signer')
+    console.log('  at', signer.address)
+    console.log('  ETH', formatEther(await signer.getBalance()))
+
+    console.log('Network')
+    console.log('  ', network.name)
+
+    const uniProxyFactory = await ethers.getContractFactory('UniProxy')
+
+    const uniProxy = await deployContract(
+      'UniProxy',
+      uniProxyFactory,
+      signer
+    )
+
+    await uniProxy.deployTransaction.wait(5)
+    await run('verify:verify', {
+      address: uniProxy.address
+    })
+  })
+
+  task('verify-uniproxy', 'Verify UniProxy contract')
+  .addParam('uniproxy', 'the UniProxy to verify')
+  .setAction(async (cliArgs, { ethers, run, network }) => {
+
+    await run('compile')
+
+    // get signer
+
+    const signer = (await ethers.getSigners())[0]
+    console.log('Signer')
+    console.log('  at', signer.address)
+    console.log('  ETH', formatEther(await signer.getBalance()))
+
+    console.log('Network')
+    console.log('  ', network.name)
+
+    const uniProxy = await ethers.getContractAt(
+      'UniProxy',
+      cliArgs.uniproxy,
+      signer,
+    )
+
+    await run('verify:verify', {
+      address: uniProxy.address
+    })
+  })

@@ -33,14 +33,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC20__factory>;
     getContractFactory(
-      name: "IUniswapV2Factory",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IUniswapV2Factory__factory>;
-    getContractFactory(
-      name: "IUniswapV2Pair",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IUniswapV2Pair__factory>;
-    getContractFactory(
       name: "IUniswapV3FlashCallback",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IUniswapV3FlashCallback__factory>;
@@ -213,22 +205,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.V3Migrator__factory>;
     getContractFactory(
-      name: "BaseController",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.BaseController__factory>;
-    getContractFactory(
-      name: "GammaController",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.GammaController__factory>;
-    getContractFactory(
-      name: "IHypervisor",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IHypervisor__factory>;
-    getContractFactory(
-      name: "IUniProxy",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IUniProxy__factory>;
-    getContractFactory(
       name: "Hypervisor",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Hypervisor__factory>;
@@ -236,10 +212,6 @@ declare module "hardhat/types/runtime" {
       name: "HypervisorFactory",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.HypervisorFactory__factory>;
-    getContractFactory(
-      name: "HypervisorV3Migrator",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.HypervisorV3Migrator__factory>;
     getContractFactory(
       name: "IHypervisor",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -272,10 +244,6 @@ declare module "hardhat/types/runtime" {
       name: "Admin",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Admin__factory>;
-    getContractFactory(
-      name: "Swap",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Swap__factory>;
     getContractFactory(
       name: "MockToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -314,16 +282,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IERC20>;
-    getContractAt(
-      name: "IUniswapV2Factory",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IUniswapV2Factory>;
-    getContractAt(
-      name: "IUniswapV2Pair",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IUniswapV2Pair>;
     getContractAt(
       name: "IUniswapV3FlashCallback",
       address: string,
@@ -540,26 +498,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.V3Migrator>;
     getContractAt(
-      name: "BaseController",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.BaseController>;
-    getContractAt(
-      name: "GammaController",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.GammaController>;
-    getContractAt(
-      name: "IHypervisor",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IHypervisor>;
-    getContractAt(
-      name: "IUniProxy",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IUniProxy>;
-    getContractAt(
       name: "Hypervisor",
       address: string,
       signer?: ethers.Signer
@@ -569,11 +507,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.HypervisorFactory>;
-    getContractAt(
-      name: "HypervisorV3Migrator",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.HypervisorV3Migrator>;
     getContractAt(
       name: "IHypervisor",
       address: string,
@@ -614,11 +547,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.Admin>;
-    getContractAt(
-      name: "Swap",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.Swap>;
     getContractAt(
       name: "MockToken",
       address: string,
